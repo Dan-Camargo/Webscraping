@@ -1,0 +1,62 @@
+import selenium
+
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.chrome.service import Service
+
+def busca_lista_url():
+    
+    driver = webdriver.Chrome()
+
+    driver.get("https://tdn.totvs.com/display/public/TVSCCLC/APIs+Linha+Consinco")
+
+    listas = driver.find_element(By.CLASS_NAME, "childpages-macro")
+
+    listas_nomes = driver.find_elements(By.TAG_NAME, "a")
+    lista_return = []
+
+    for e in listas_nomes:
+        lista_return.append(e.get_attribute("href"))
+ #       if e.get_attribute("href") and e.text:
+    return lista_return
+
+def busca_url_especifico(var_url):
+    driver = webdriver.Chrome()
+    driver.get(var_url)
+
+    h2_elements = driver.find_elements(By.TAG_NAME, "h2")
+    lista_h2 = [x.text for x in h2_elements]
+    lista_return = []
+
+    # Se a página tiver os títulos esperados
+    if "Objetivo" in lista_h2 or "Chamada" in lista_h2:
+        for i, h2 in enumerate(h2_elements):
+            titulo = h2.text.strip()
+            descricao = "(script não capturou o conteúdo corretamente)"
+            try:
+                # Primeiro tenta <p>
+                descricao = driver.find_element(By.XPATH,f"(//h2)[{i+1}]/following-sibling::*[1][self::p]").text
+            except:
+                try:
+                    # Se não achou <p>, tenta <pre>
+                    descricao = driver.find_element(By.XPATH,f"(//h2)[{i+1}]/following-sibling::*[1][self::pre]").text
+                except:
+                    pass
+
+            lista_return.append({
+    "titulo": titulo,
+    "conteudo": descricao
+})
+
+    driver.quit()
+    return lista_return
+
+print(busca_url_especifico("https://tdn.totvs.com/display/public/TVSCCLC/Login+Corp+-+POST"))
+
+#
+#lista_urls = busca_lista_url()
+#informacoes = []
+#for url in lista_urls
+#   informacoes.append(busca_url_especifico(url))
+
+
